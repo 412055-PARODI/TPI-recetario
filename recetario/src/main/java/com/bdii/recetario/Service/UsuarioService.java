@@ -62,6 +62,11 @@ public class UsuarioService {
             // if (usuarioDetails.getPassword() != null && !usuarioDetails.getPassword().isEmpty()) {
             //     usuario.setPassword(passwordEncoder.encode(usuarioDetails.getPassword()));
             // }
+
+            // Actualizar lista de recetas favoritas
+            if (usuarioDetails.getRecetasFavoritas() != null) {
+                usuario.setRecetasFavoritas(usuarioDetails.getRecetasFavoritas());
+            }
             
             return usuarioRepository.save(usuario);
         }

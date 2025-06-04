@@ -36,7 +36,7 @@ public class ComentarioService {
         Optional<Receta> recetaOpt = recetaRepository.findById(comentario.getRecetaId());
         if (recetaOpt.isPresent()) {
             Receta receta = recetaOpt.get();
-            receta.getComentarios().add(savedComentario);
+            receta.getComentarios().add(savedComentario.getId());
             recetaRepository.save(receta);
         }
         
@@ -57,7 +57,7 @@ public class ComentarioService {
                 Optional<Receta> recetaOpt = recetaRepository.findById(comentario.getRecetaId());
                 if (recetaOpt.isPresent()) {
                     Receta receta = recetaOpt.get();
-                    receta.getComentarios().removeIf(c -> c.getId().equals(id));
+                    receta.getComentarios().remove(id);
                     recetaRepository.save(receta);
                 }
                 

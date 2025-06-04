@@ -93,19 +93,35 @@ public class RecetaService {
     // Marcar/desmarcar receta como favorita
     public boolean toggleFavorito(String recetaId, String userId) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(userId);
-        if (usuarioOpt.isPresent()) {
+        Optional<Receta> recetaOpt = recetaRepository.findById(recetaId);
+        
+        if (usuarioOpt.isPresent() && recetaOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            List<String> favoritos = usuario.getRecetasFavoritas();
+            Receta receta = recetaOpt.get();
+            
+            List<String> favoritosUsuario = usuario.getRecetasFavoritas();
+            List<String> favoritosReceta = receta.getFavoritos();
+            
+            // Inicializar la lista si es null
+            if (favoritosReceta == null) {
+                favoritosReceta = new java.util.ArrayList<>();
+                receta.setFavoritos(favoritosReceta);
+            }
+            
+            boolean esFavorita = favoritosUsuario.contains(recetaId);
             
             // Si ya está en favoritos, quitarla
-            if (favoritos.contains(recetaId)) {
-                favoritos.remove(recetaId);
+            if (esFavorita) {
+                favoritosUsuario.remove(recetaId);
+                favoritosReceta.remove(userId);
             } else {
                 // Si no está en favoritos, agregarla
-                favoritos.add(recetaId);
+                favoritosUsuario.add(recetaId);
+                favoritosReceta.add(userId);
             }
             
             usuarioRepository.save(usuario);
+            recetaRepository.save(receta);
             return true;
         }
         return false;

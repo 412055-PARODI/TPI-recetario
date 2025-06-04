@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/recetas")
@@ -18,10 +19,22 @@ public class RecetaController {
     @Autowired
     private RecetaService recetaService;
     
-    // Obtener todas las recetas
+    // Obtener todas las recetas o filtrar por usuario si se pasa userId
     @GetMapping
-    public ResponseEntity<List<Receta>> getAllRecetas() {
-        return ResponseEntity.ok(recetaService.getAllRecetas());
+    public ResponseEntity<?> getAllRecetas(@RequestParam(required = false) String userId) {
+        try {
+            if (userId != null && !userId.isEmpty()) {
+                // Filtrar recetas por autor
+                return ResponseEntity.ok(recetaService.getRecetasByAutor(userId));
+            } else {
+                // Devolver todas las recetas
+                return ResponseEntity.ok(recetaService.getAllRecetas());
+            }
+        } catch (Exception e) {
+            // Manejo de error: loguear y devolver mensaje claro
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "Error interno al obtener recetas", "error", e.getMessage()));
+        }
     }
     
     // Obtener receta por ID
@@ -47,18 +60,28 @@ public class RecetaController {
     // Crear una nueva receta
     @PostMapping
     public ResponseEntity<Receta> createReceta(@RequestBody Receta receta, @RequestParam String userId) {
+        // Establecer el autor de la receta usando el userId
+        receta.setAutor(userId);
         Receta nuevaReceta = recetaService.createReceta(receta, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaReceta);
     }
     
     // Actualizar una receta existente
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateReceta(@PathVariable String id, @RequestBody Receta recetaDetails) {
-        Receta recetaActualizada = recetaService.updateReceta(id, recetaDetails);
-        if (recetaActualizada != null) {
-            return ResponseEntity.ok(recetaActualizada);
+    public ResponseEntity<?> updateReceta(
+            @PathVariable String id, 
+            @RequestBody Receta recetaDetails,
+            @RequestParam String userId) {
+        // Verificar que el usuario es el autor de la receta
+        Optional<Receta> recetaOpt = recetaService.getRecetaById(id);
+        if (recetaOpt.isPresent() && recetaOpt.get().getAutor().equals(userId)) {
+            Receta recetaActualizada = recetaService.updateReceta(id, recetaDetails);
+            if (recetaActualizada != null) {
+                return ResponseEntity.ok(recetaActualizada);
+            }
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "No tienes permiso para editar esta receta"));
     }
     
     // Eliminar una receta

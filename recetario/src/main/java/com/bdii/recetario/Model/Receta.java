@@ -13,8 +13,8 @@ public class Receta {
     private String id;
     private String titulo;
     private String autor; // puede ser el ID del usuario
-    private List<String> ingredientes;
-    private List<String> pasos;
-    private List<Comentario> comentarios;
-    private List<String> favoritos; // lista de IDs de usuarios que la marcaron   
+    private List<String> ingredientes = new java.util.ArrayList<>();
+    private List<String> pasos = new java.util.ArrayList<>();
+    private List<String> comentarios = new java.util.ArrayList<>(); // lista de IDs de comentarios
+    private List<String> favoritos = new java.util.ArrayList<>(); // lista de IDs de usuarios que la marcaron   
     }
